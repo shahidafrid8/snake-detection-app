@@ -18,6 +18,10 @@ elif 'api_key' in st.secrets:  # Alternative key name
     os.environ['ROBOFLOW_API_KEY'] = st.secrets['api_key']
     api_key_configured = True
 
+# Set model ID from Streamlit secrets if available
+if 'ROBOFLOW_MODEL_ID' in st.secrets:
+    os.environ['ROBOFLOW_MODEL_ID'] = st.secrets['ROBOFLOW_MODEL_ID']
+
 if not api_key_configured:
     st.error("⚠️ **Roboflow API Key Not Configured**")
     st.info("""
