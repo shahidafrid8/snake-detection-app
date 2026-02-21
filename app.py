@@ -42,7 +42,7 @@ if uploaded_file is not None:
         
         if method == "API":
             # Draw boxes from API predictions
-            if 'predictions' in predictions:
+            if 'predictions' in predictions and predictions['predictions']:
                 for pred in predictions['predictions']:
                     x_center = pred['x']
                     y_center = pred['y']
@@ -59,12 +59,15 @@ if uploaded_file is not None:
                     draw.rectangle([x1, y1, x2, y2], outline="green", width=2)
                     label = f"{class_name} {confidence:.2f}"
                     draw.text((x1, y1 - 10), label, fill="green")
+                st.image(draw_img, caption="Detected Image", use_column_width=True)
+            else:
+                st.info("No snake detected in the image.")
+                st.image(img, caption="Uploaded Image (No Detection)", use_column_width=True)
         elif method == "LOCAL":
             # For local, plot returns numpy array, convert to PIL
             plotted = predictions[0].plot()
             draw_img = Image.fromarray(plotted)
-        
-        st.image(draw_img, caption="Detected Image", use_column_width=True)
+            st.image(draw_img, caption="Detected Image", use_column_width=True)
         
         # Clean up
         os.remove(temp_path)
