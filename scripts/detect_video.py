@@ -7,7 +7,6 @@ import os
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from detect import detect
-from PIL import Image
 import tempfile
 
 def detect_video(video_path, progress_callback=None):
