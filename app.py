@@ -3,9 +3,11 @@ from PIL import Image, ImageDraw
 import os
 import sys
 import tempfile
+import cv2
 
 sys.path.insert(0, os.path.dirname(__file__))
 from scripts.detect import detect
+from scripts.detect_video import detect_video
 
 # Set API key from Streamlit secrets
 api_key_configured = False
@@ -39,12 +41,13 @@ st.title("🐍 Snake Detection App")
 # Sidebar with instructions
 with st.sidebar:
     st.header("ℹ️ About")
-    st.write("This app detects snakes in images using AI.")
+    st.write("This app detects snakes in images and videos using AI.")
     
     st.subheader("How to use:")
-    st.write("1. Upload an image")
+    st.write("1. Upload an image or video")
     st.write("2. Wait for detection")
     st.write("3. View results with bounding boxes")
+    st.write("4. Download processed video (for videos)")
     
     if api_key_configured:
         st.success("✅ API Key Configured")
@@ -55,23 +58,31 @@ with st.sidebar:
     st.divider()
     st.caption("Powered by YOLOv8 & Roboflow")
 
-st.write("Upload an image to detect snakes using Roboflow API or local YOLO model.")
+# File type selection
+file_type = st.radio("Select file type:", ["Image", "Video"], horizontal=True)
 
-uploaded_file = st.file_uploader("Choose an image...", type=["png", "jpg", "jpeg"])
+if file_type == "Image":
+    st.write("Upload an image to detect snakes using Roboflow API or local YOLO model.")
+    uploaded_file = st.file_uploader("Choose an image...", type=["png", "jpg", "jpeg"])
+else:
+    st.write("Upload a video to detect snakes. Video will be processed frame by frame.")
+    uploaded_file = st.file_uploader("Choose a video...", type=["mp4", "avi", "mov", "mkv"])
 
 if uploaded_file is not None:
-    # Load image with PIL
-    img = Image.open(uploaded_file)
-    st.image(img, caption="Uploaded Image", width="stretch")
-    
-    # Save temporarily for detection using cross-platform temp directory
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmp_file:
-        temp_path = tmp_file.name
-        img.save(temp_path)
-    
-    # Run detection
-    with st.spinner("Detecting snakes..."):
-        predictions, method, error_msg = detect(temp_path)
+    if file_type == "Image":
+        # ===== IMAGE PROCESSING =====
+        # Load image with PIL
+        img = Image.open(uploaded_file)
+        st.image(img, caption="Uploaded Image", width="stretch")
+        
+        # Save temporarily for detection using cross-platform temp directory
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmp_file:
+            temp_path = tmp_file.name
+            img.save(temp_path)
+        
+        # Run detection
+        with st.spinner("Detecting snakes..."):
+            predictions, method, error_msg = detect(temp_path)
     
     if error_msg:
         # Provide user-friendly error messages
@@ -158,3 +169,77 @@ if uploaded_file is not None:
         # Clean up
         if os.path.exists(temp_path):
             os.remove(temp_path)
+    
+    else:  # file_type == "Video"
+        # ===== VIDEO PROCESSING =====
+        st.video(uploaded_file)
+        
+        # Save uploaded video temporarily
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as tmp_file:
+            temp_video_path = tmp_file.name
+            tmp_file.write(uploaded_file.read())
+        
+        # Process video
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        
+        def update_progress(current, total):
+            progress = int((current / total) * 100)
+            progress_bar.progress(progress)
+            status_text.text(f"Processing: {current}/{total} frames ({progress}%)")
+        
+        with st.spinner("Detecting snakes in video..."):
+            output_path, method, error_msg, stats = detect_video(temp_video_path, update_progress)
+        
+        if error_msg:
+            # Same error handling as images
+            error_lower = error_msg.lower()
+            if "api key" in error_lower or "oauthexception" in error_lower:
+                st.error("❌ **API Authentication Failed**")
+                st.warning("Please configure your Roboflow API key in Streamlit Secrets.")
+            elif "local model not found" in error_lower:
+                st.error("❌ **Both API and Local Model Failed**")
+                st.warning("Configure your Roboflow API key for video detection.")
+            else:
+                st.error(f"❌ **Video Detection Failed**")
+                st.code(error_msg, language=None)
+            
+            # Clean up
+            if os.path.exists(temp_video_path):
+                os.remove(temp_video_path)
+        else:
+            status_text.empty()
+            progress_bar.empty()
+            
+            st.success(f"✅ Video detection completed using {method}!")
+            
+            # Display stats
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Total Frames", stats['total_frames'])
+            with col2:
+                st.metric("Detections", stats['detections'])
+            with col3:
+                st.metric("FPS", stats['fps'])
+            
+            # Display processed video
+            st.subheader("📹 Processed Video")
+            if os.path.exists(output_path):
+                with open(output_path, 'rb') as video_file:
+                    video_bytes = video_file.read()
+                    st.video(video_bytes)
+                
+                # Download button
+                st.download_button(
+                    label="⬇️ Download Detected Video",
+                    data=video_bytes,
+                    file_name="snake_detected_video.mp4",
+                    mime="video/mp4"
+                )
+                
+                # Clean up output video after showing
+                os.remove(output_path)
+            
+            # Clean up temp video
+            if os.path.exists(temp_video_path):
+                os.remove(temp_video_path)
