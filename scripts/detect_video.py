@@ -9,13 +9,14 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from detect import detect
 import tempfile
 
-def detect_video(video_path, progress_callback=None):
+def detect_video(video_path, progress_callback=None, preferred_method="auto"):
     """
     Detect snakes in a video file.
     
     Args:
         video_path (str): Path to input video file
         progress_callback (callable): Optional callback for progress updates
+        preferred_method (str): Detection method - "auto", "api", or "local"
         
     Returns:
         tuple: (output_path, method, error_msg, stats)
@@ -57,7 +58,7 @@ def detect_video(video_path, progress_callback=None):
             
             # Detect on frame (every 5th frame to speed up processing)
             if frame_count % 5 == 0 or frame_count == 1:
-                predictions, method, error_msg = detect(temp_frame_path)
+                predictions, method, error_msg = detect(temp_frame_path, preferred_method)
                 
                 if error_msg:
                     cap.release()

@@ -9,13 +9,13 @@ sys.path.insert(0, os.path.dirname(__file__))
 from detect_api import detect_with_api
 from detect_local import detect_with_local_model
 
-def detect(image_path):
+def detect(image_path, preferred_method="auto"):
     """
-    Performs object detection on an image, first trying the Roboflow API
-    and falling back to a local model on any failure.
+    Performs object detection on an image with specified method preference.
 
     Args:
         image_path (str): The path to the image file.
+        preferred_method (str): Detection method - "auto", "api", or "local"
 
     Returns:
         tuple: A tuple containing the predictions, the method used ('API' or 'LOCAL'), and error message (None if success).
@@ -23,21 +23,34 @@ def detect(image_path):
     if not os.path.exists(image_path):
         return None, "FAILED", f"Image not found at {image_path}"
 
-    try:
-        print("Attempting detection with Roboflow API...")
-        predictions = detect_with_api(image_path)
-        print("Inference successful with Roboflow API.")
-        return predictions, "API", None
-    except Exception as e:
-        print(f"Roboflow API failed: {e}")
-        print("Falling back to local YOLOv8 model...")
+    preferred_method = preferred_method.lower()
+    
+    # Try API first if preferred or auto
+    if preferred_method in ["auto", "api"]:
+        try:
+            print("Attempting detection with Roboflow API...")
+            predictions = detect_with_api(image_path)
+            print("Inference successful with Roboflow API.")
+            return predictions, "API", None
+        except Exception as e:
+            print(f"Roboflow API failed: {e}")
+            # If API was specifically requested, don't fallback
+            if preferred_method == "api":
+                return None, "FAILED", str(e)
+            # Otherwise continue to local model
+            print("Falling back to local YOLOv8 model...")
+    
+    # Try local model
+    if preferred_method in ["auto", "local"]:
         try:
             predictions = detect_with_local_model(image_path)
             print("Inference successful with local model.")
             return predictions, "LOCAL", None
         except Exception as e:
-            print(f"Local model detection also failed: {e}")
+            print(f"Local model detection failed: {e}")
             return None, "FAILED", str(e)
+    
+    return None, "FAILED", f"Invalid detection method: {preferred_method}"
 
 if __name__ == '__main__':
     # Example usage:

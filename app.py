@@ -40,35 +40,99 @@ st.title("🐍 Snake Detection App")
 
 # Sidebar with instructions
 with st.sidebar:
+    st.header("⚙️ Settings")
+    
+    # Theme toggle
+    theme = st.toggle("🌙 Dark Mode", value=True)
+    if theme:
+        st.markdown("""
+        <style>
+        .stApp {
+            background-color: #0e1117;
+            color: #fafafa;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <style>
+        .stApp {
+            background-color: #ffffff;
+            color: #262730;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+    
+    st.divider()
+    
     st.header("ℹ️ About")
     st.write("This app detects snakes in images and videos using AI.")
     
     st.subheader("How to use:")
-    st.write("1. Upload an image or video")
-    st.write("2. Wait for detection")
-    st.write("3. View results with bounding boxes")
-    st.write("4. Download processed video (for videos)")
-    
-    if api_key_configured:
-        st.success("✅ API Key Configured")
-    else:
-        st.error("❌ API Key Missing")
-        st.caption("Add ROBOFLOW_API_KEY in Secrets")
+    st.write("1. Select file type (Image/Video)")
+    st.write("2. Choose detection method")
+    st.write("3. Upload file")
+    st.write("4. View results & download")
     
     st.divider()
-    st.caption("Powered by YOLOv8 & Roboflow")
+    
+    st.subheader("🔑 API Status")
+    if api_key_configured:
+        st.success("✅ Roboflow API Ready")
+    else:
+        st.warning("⚠️ API Not Configured")
+        st.caption("Will use local model only")
+    
+    # Check local model
+    local_model_path = os.path.join(os.path.dirname(__file__), "model", "best.pt")
+    if os.path.exists(local_model_path):
+        st.success("✅ Local Model Ready")
+    else:
+        st.warning("⚠️ Local Model Not Found")
+    
+    st.divider()
+    st.caption("🚀 Powered by YOLOv8 & Roboflow")
 
 # File type selection
-file_type = st.radio("Select file type:", ["Image", "Video"], horizontal=True)
+col1, col2 = st.columns([1, 1])
+with col1:
+    file_type = st.selectbox("📁 Select File Type", ["Image", "Video"], index=0)
+
+with col2:
+    # Detection method selection
+    detection_methods = []
+    if api_key_configured:
+        detection_methods.append("🌐 Roboflow API")
+    if os.path.exists(os.path.join(os.path.dirname(__file__), "model", "best.pt")):
+        detection_methods.append("💻 Local Model")
+    
+    if len(detection_methods) > 0:
+        detection_methods.insert(0, "✨ Auto (Best Available)")
+        detection_method = st.selectbox("🎯 Detection Method", detection_methods, index=0)
+    else:
+        st.error("❌ No detection method available!")
+        st.stop()
+
+st.divider()
 
 if file_type == "Image":
-    st.write("Upload an image to detect snakes using Roboflow API or local YOLO model.")
+    st.write("🖼️ Upload an image to detect snakes")
     uploaded_file = st.file_uploader("Choose an image...", type=["png", "jpg", "jpeg"])
 else:
-    st.write("Upload a video to detect snakes. Video will be processed frame by frame.")
+    st.write("🎥 Upload a video to detect snakes (processed frame by frame)")
     uploaded_file = st.file_uploader("Choose a video...", type=["mp4", "avi", "mov", "mkv"])
 
 if uploaded_file is not None:
+    # Map detection method selection to parameter
+    if "Auto" in detection_method:
+        method_param = "auto"
+    elif "Roboflow" in detection_method:
+        method_param = "api"
+    elif "Local" in detection_method:
+        method_param = "local"
+    else:
+        method_param = "auto"
+    
     if file_type == "Image":
         # ===== IMAGE PROCESSING =====
         # Load image with PIL
@@ -80,9 +144,9 @@ if uploaded_file is not None:
             temp_path = tmp_file.name
             img.save(temp_path)
         
-        # Run detection
-        with st.spinner("Detecting snakes..."):
-            predictions, method, error_msg = detect(temp_path)
+        # Run detection with selected method
+        with st.spinner(f"Detecting snakes using {detection_method}..."):
+            predictions, method, error_msg = detect(temp_path, method_param)
         
         if error_msg:
             # Provide user-friendly error messages
@@ -187,8 +251,8 @@ if uploaded_file is not None:
             progress_bar.progress(progress)
             status_text.text(f"Processing: {current}/{total} frames ({progress}%)")
         
-        with st.spinner("Detecting snakes in video..."):
-            output_path, method, error_msg, stats = detect_video(temp_video_path, update_progress)
+        with st.spinner(f"Detecting snakes in video using {detection_method}..."):
+            output_path, method, error_msg, stats = detect_video(temp_video_path, update_progress, method_param)
         
         if error_msg:
             # Same error handling as images
