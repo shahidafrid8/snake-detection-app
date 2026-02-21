@@ -1,5 +1,5 @@
 import streamlit as st
-import cv2
+from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 import os
 import sys
@@ -13,12 +13,13 @@ st.write("Upload an image to detect snakes using Roboflow API or local YOLO mode
 uploaded_file = st.file_uploader("Choose an image...", type=["png", "jpg", "jpeg"])
 
 if uploaded_file is not None:
-    # Save the uploaded file temporarily
-    temp_path = "temp_image.png"
-    with open(temp_path, "wb") as f:
-        f.write(uploaded_file.getbuffer())
+    # Load image with PIL
+    img = Image.open(uploaded_file)
+    st.image(img, caption="Uploaded Image", use_column_width=True)
     
-    st.image(uploaded_file, caption="Uploaded Image", use_column_width=True)
+    # Save temporarily for detection
+    temp_path = "temp_image.png"
+    img.save(temp_path)
     
     # Run detection
     with st.spinner("Detecting snakes..."):
@@ -27,8 +28,9 @@ if uploaded_file is not None:
     if predictions:
         st.success(f"Detection completed using {method}.")
         
-        # Load image
-        img = cv2.imread(temp_path)
+        # Create a copy for drawing
+        draw_img = img.copy()
+        draw = ImageDraw.Draw(draw_img)
         
         if method == "API":
             # Draw boxes from API predictions
@@ -46,16 +48,15 @@ if uploaded_file is not None:
                     x2 = int(x_center + width / 2)
                     y2 = int(y_center + height / 2)
                     
-                    cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                    draw.rectangle([x1, y1, x2, y2], outline="green", width=2)
                     label = f"{class_name} {confidence:.2f}"
-                    cv2.putText(img, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                    draw.text((x1, y1 - 10), label, fill="green")
         elif method == "LOCAL":
-            # For local, use plot
-            img = predictions[0].plot()
+            # For local, plot returns numpy array, convert to PIL
+            plotted = predictions[0].plot()
+            draw_img = Image.fromarray(plotted)
         
-        # Convert BGR to RGB for streamlit
-        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        st.image(img_rgb, caption="Detected Image", use_column_width=True)
+        st.image(draw_img, caption="Detected Image", use_column_width=True)
         
         # Clean up
         os.remove(temp_path)
