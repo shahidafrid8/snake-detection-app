@@ -50,7 +50,7 @@ if uploaded_file is not None:
             st.error("Detection failed: Model file not found. Ensure the local model is properly uploaded.")
         else:
             st.error(f"Detection failed: {error_msg}")
-        return
+        st.stop()
         st.success(f"Detection completed using {method}.")
         
         # Create a copy for drawing
