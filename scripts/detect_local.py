@@ -6,7 +6,6 @@
 import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from ultralytics import YOLO
 from config import LOCAL_MODEL_PATH, CONF_THRESHOLD
 
 def detect_with_local_model(image_path):
@@ -20,6 +19,7 @@ def detect_with_local_model(image_path):
         list: The prediction results from the local model.
     """
     try:
+        from ultralytics import YOLO
         model = YOLO(LOCAL_MODEL_PATH)
         results = model(image_path, conf=CONF_THRESHOLD)
         return results
