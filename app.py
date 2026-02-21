@@ -140,6 +140,47 @@ with st.sidebar:
         hr {
             border-color: #30363d !important;
         }
+        
+        /* Streamlit components - File uploader */
+        [data-testid="stFileUploadDropzone"] {
+            background-color: #161b22 !important;
+            border-color: #30363d !important;
+        }
+        
+        .stFileUploader {
+            background-color: #0e1117 !important;
+        }
+        
+        /* Streamlit selectbox and combobox */
+        [data-testid="stSelectbox"],
+        [data-testid="stCombobox"],
+        [data-testid="stRadio"],
+        [data-testid="stCheckbox"] {
+            background-color: #0e1117 !important;
+        }
+        
+        /* Selectbox dropdown styling */
+        [role="option"],
+        [role="listbox"] {
+            background-color: #161b22 !important;
+            color: #fafafa !important;
+        }
+        
+        [role="option"]:hover,
+        [role="option"]:focus {
+            background-color: #30363d !important;
+            color: #fafafa !important;
+        }
+        
+        /* Container styling */
+        [data-testid="element-container"] {
+            background-color: transparent !important;
+        }
+        
+        /* Column styling */
+        [data-testid="column"] {
+            background-color: transparent !important;
+        }
         </style>
         """, unsafe_allow_html=True)
     else:
@@ -233,6 +274,47 @@ with st.sidebar:
         /* Divider */
         hr {
             border-color: #ddd !important;
+        }
+        
+        /* Streamlit components - File uploader */
+        [data-testid="stFileUploadDropzone"] {
+            background-color: #f9f9f9 !important;
+            border-color: #ddd !important;
+        }
+        
+        .stFileUploader {
+            background-color: #ffffff !important;
+        }
+        
+        /* Streamlit selectbox and combobox */
+        [data-testid="stSelectbox"],
+        [data-testid="stCombobox"],
+        [data-testid="stRadio"],
+        [data-testid="stCheckbox"] {
+            background-color: #ffffff !important;
+        }
+        
+        /* Selectbox dropdown styling */
+        [role="option"],
+        [role="listbox"] {
+            background-color: #f9f9f9 !important;
+            color: #262730 !important;
+        }
+        
+        [role="option"]:hover,
+        [role="option"]:focus {
+            background-color: #f0f2f6 !important;
+            color: #262730 !important;
+        }
+        
+        /* Container styling */
+        [data-testid="element-container"] {
+            background-color: transparent !important;
+        }
+        
+        /* Column styling */
+        [data-testid="column"] {
+            background-color: transparent !important;
         }
         </style>
         """, unsafe_allow_html=True)
