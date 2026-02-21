@@ -83,6 +83,43 @@ with st.sidebar:
             border-color: #30363d !important;
         }
         
+        /* Input text color specifically */
+        input[type="text"],
+        input[type="password"],
+        input[type="email"],
+        input[type="number"],
+        input[type="file"],
+        textarea {
+            background-color: #161b22 !important;
+            color: #fafafa !important;
+            border-color: #30363d !important;
+        }
+        
+        /* Input placeholder text */
+        input::placeholder,
+        textarea::placeholder {
+            color: #8b949e !important;
+        }
+        
+        /* Input focus state */
+        input:focus,
+        textarea:focus,
+        select:focus {
+            background-color: #0d1117 !important;
+            color: #fafafa !important;
+            border-color: #58a6ff !important;
+            outline: none !important;
+        }
+        
+        /* Autofilled input */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus {
+            -webkit-box-shadow: 0 0 0 1000px #161b22 inset !important;
+            -webkit-text-fill-color: #fafafa !important;
+            border-color: #30363d !important;
+        }
+        
         /* Sidebar */
         [data-testid="stSidebar"] {
             background-color: #0d1117 !important;
@@ -137,6 +174,43 @@ with st.sidebar:
         input, textarea, select {
             background-color: #f9f9f9 !important;
             color: #262730 !important;
+            border-color: #ddd !important;
+        }
+        
+        /* Input text color specifically */
+        input[type="text"],
+        input[type="password"],
+        input[type="email"],
+        input[type="number"],
+        input[type="file"],
+        textarea {
+            background-color: #f9f9f9 !important;
+            color: #262730 !important;
+            border-color: #ddd !important;
+        }
+        
+        /* Input placeholder text */
+        input::placeholder,
+        textarea::placeholder {
+            color: #999999 !important;
+        }
+        
+        /* Input focus state */
+        input:focus,
+        textarea:focus,
+        select:focus {
+            background-color: #ffffff !important;
+            color: #262730 !important;
+            border-color: #0066cc !important;
+            outline: none !important;
+        }
+        
+        /* Autofilled input */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus {
+            -webkit-box-shadow: 0 0 0 1000px #f9f9f9 inset !important;
+            -webkit-text-fill-color: #262730 !important;
             border-color: #ddd !important;
         }
         
