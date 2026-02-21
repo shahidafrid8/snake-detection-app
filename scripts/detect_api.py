@@ -25,11 +25,17 @@ def detect_with_api(image_path):
     try:
         rf = Roboflow(api_key=ROBOFLOW_API_KEY)
         
-        # ROBOFLOW_MODEL_ID is expected to be in "project_id/version_number" format
-        project_id, version_id = ROBOFLOW_MODEL_ID.split('/')
+        # ROBOFLOW_MODEL_ID is expected to be in "workspace/project/version" format
+        parts = ROBOFLOW_MODEL_ID.split('/')
+        if len(parts) == 3:
+            workspace, project_id, version = parts
+            project = rf.workspace(workspace).project(project_id)
+        else:
+            # Fallback to old format
+            project_id, version = parts[0], parts[1]
+            project = rf.workspace().project(project_id)
         
-        project = rf.workspace().project(project_id)
-        model = project.version(version_id).model
+        model = project.version(version).model
 
         result = model.predict(image_path, confidence=CONF_THRESHOLD).json()
         return result
