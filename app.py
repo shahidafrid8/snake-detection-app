@@ -26,7 +26,7 @@ if uploaded_file is not None:
     st.image(img, caption="Uploaded Image", use_column_width=True)
     
     # Save temporarily for detection
-    temp_path = "temp_image.png"
+    temp_path = "/tmp/temp_image.png"
     img.save(temp_path)
     
     # Run detection
