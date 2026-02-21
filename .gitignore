@@ -13,3 +13,4 @@ data/
 !model/best.pt
 .DS_Store
 Thumbs.db
+.streamlit/secrets.toml

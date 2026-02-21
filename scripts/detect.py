@@ -45,12 +45,14 @@ if __name__ == '__main__':
     # You can change the image path to test the detection system.
     test_image = "data/test.png"
     
-    predictions, method = detect(test_image)
+    predictions, method, error_msg = detect(test_image)
 
-    if predictions:
+    if error_msg:
+        print("\nDetection Failed!")
+        print(f"Error: {error_msg}")
+    else:
         print(f"\nDetection Method Used: {method}")
         print("Predictions:")
         # The structure of 'predictions' will differ between the API and the local model.
-        # You may need to add specific parsing logic here based on your needs.
         print(predictions)
 

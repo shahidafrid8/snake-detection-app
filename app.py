@@ -1,8 +1,9 @@
 import streamlit as st
-from PIL import Image, ImageDraw, ImageFont
-import numpy as np
+from PIL import Image, ImageDraw
 import os
 import sys
+import tempfile
+
 sys.path.insert(0, os.path.dirname(__file__))
 from scripts.detect import detect
 
@@ -12,9 +13,9 @@ if 'ROBOFLOW_API_KEY' in st.secrets:
 elif 'api_key' in st.secrets:  # Alternative key name
     os.environ['ROBOFLOW_API_KEY'] = st.secrets['api_key']
 else:
-    st.warning("Roboflow API key not set in secrets. Detection may fail. Set ROBOFLOW_API_KEY in app secrets.")
+    st.warning("Roboflow API key not set in secrets. Detection may fall back to local model.")
 
-st.title("Snake Detection App")
+st.title("🐍 Snake Detection App")
 
 st.write("Upload an image to detect snakes using Roboflow API or local YOLO model.")
 
@@ -23,11 +24,12 @@ uploaded_file = st.file_uploader("Choose an image...", type=["png", "jpg", "jpeg
 if uploaded_file is not None:
     # Load image with PIL
     img = Image.open(uploaded_file)
-    st.image(img, caption="Uploaded Image", use_column_width=True)
+    st.image(img, caption="Uploaded Image", width="stretch")
     
-    # Save temporarily for detection
-    temp_path = "/tmp/temp_image.png"
-    img.save(temp_path)
+    # Save temporarily for detection using cross-platform temp directory
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmp_file:
+        temp_path = tmp_file.name
+        img.save(temp_path)
     
     # Run detection
     with st.spinner("Detecting snakes..."):
@@ -37,21 +39,24 @@ if uploaded_file is not None:
         # Provide user-friendly error messages
         error_lower = error_msg.lower()
         if "api key" in error_lower or "oauthexception" in error_lower or "does not exist" in error_msg:
-            st.error("Detection failed: Invalid Roboflow API key. Please check your API key in Streamlit secrets and ensure it's correct.")
+            st.error("❌ Detection failed: Invalid Roboflow API key. Please check your API key in Streamlit secrets and ensure it's correct.")
         elif "model" in error_lower and ("not found" in error_lower or "not available" in error_lower):
-            st.error("Detection failed: Roboflow model not deployed or accessible. Check your model status on Roboflow and redeploy if needed.")
+            st.error("❌ Detection failed: Roboflow model not deployed or accessible. Check your model status on Roboflow and redeploy if needed.")
         elif "credits" in error_lower or "quota" in error_lower:
-            st.error("Detection failed: Roboflow API credits exhausted. Check your Roboflow account for usage limits.")
+            st.error("❌ Detection failed: Roboflow API credits exhausted. Check your Roboflow account for usage limits.")
         elif "network" in error_lower or "connection" in error_lower or "timeout" in error_lower:
-            st.error("Detection failed: Network issue. Check your internet connection. Falling back to local model if available.")
+            st.error("❌ Detection failed: Network issue. Check your internet connection.")
         elif "cv2" in error_msg or "opencv" in error_lower:
-            st.error("Detection failed: Local model requires OpenCV, which is not available on this platform. Please use API detection.")
+            st.error("❌ Detection failed: Local model requires OpenCV, which is not available.")
         elif "no such file" in error_lower or "file not found" in error_lower:
-            st.error("Detection failed: Model file not found. Ensure the local model is properly uploaded.")
+            st.error("❌ Detection failed: Model file not found. Ensure the local model is properly uploaded.")
         else:
-            st.error(f"Detection failed: {error_msg}")
-        st.stop()
-        st.success(f"Detection completed using {method}.")
+            st.error(f"❌ Detection failed: {error_msg}")
+        # Clean up temp file
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+    else:
+        st.success(f"✅ Detection completed using {method}.")
         
         # Create a copy for drawing
         draw_img = img.copy()
@@ -76,17 +81,19 @@ if uploaded_file is not None:
                     draw.rectangle([x1, y1, x2, y2], outline="green", width=2)
                     label = f"{class_name} {confidence:.2f}"
                     draw.text((x1, y1 - 10), label, fill="green")
-                st.image(draw_img, caption="Detected Image", use_column_width=True)
+                st.image(draw_img, caption="Detected Image", width="stretch")
             else:
                 st.info("No snake detected in the image.")
-                st.image(img, caption="Uploaded Image (No Detection)", use_column_width=True)
+                st.image(img, caption="Uploaded Image (No Detection)", width="stretch")
         elif method == "LOCAL":
             # For local, plot returns numpy array, convert to PIL
+            import cv2
             plotted = predictions[0].plot()
-            draw_img = Image.fromarray(plotted)
-            st.image(draw_img, caption="Detected Image", use_column_width=True)
+            # Convert BGR to RGB for proper display
+            plotted_rgb = cv2.cvtColor(plotted, cv2.COLOR_BGR2RGB)
+            draw_img = Image.fromarray(plotted_rgb)
+            st.image(draw_img, caption="Detected Image", width="stretch")
         
         # Clean up
-        os.remove(temp_path)
-    else:
-        st.error("Detection failed.")
+        if os.path.exists(temp_path):
+            os.remove(temp_path)

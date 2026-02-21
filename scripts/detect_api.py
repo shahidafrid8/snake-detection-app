@@ -22,6 +22,9 @@ def detect_with_api(image_path):
     Raises:
         Exception: For any errors during API inference.
     """
+    if not ROBOFLOW_API_KEY:
+        raise Exception("ROBOFLOW_API_KEY is not set. Please configure it in environment variables or Streamlit secrets.")
+    
     try:
         rf = Roboflow(api_key=ROBOFLOW_API_KEY)
         
@@ -30,15 +33,23 @@ def detect_with_api(image_path):
         if len(parts) == 3:
             workspace, project_id, version = parts
             project = rf.workspace(workspace).project(project_id)
-        else:
-            # Fallback to old format
-            project_id, version = parts[0], parts[1]
+        elif len(parts) == 2:
+            # Fallback to format "project/version"
+            project_id, version = parts
             project = rf.workspace().project(project_id)
+        else:
+            raise Exception(f"Invalid ROBOFLOW_MODEL_ID format: {ROBOFLOW_MODEL_ID}. Expected 'workspace/project/version' or 'project/version'")
         
         model = project.version(version).model
 
         result = model.predict(image_path, confidence=CONF_THRESHOLD).json()
         return result
     except Exception as e:
-        # Catch any exceptions from the roboflow library and raise a generic exception
-        raise Exception(f"An unexpected error occurred during API detection: {e}")
+        # Provide more informative error messages
+        error_msg = str(e)
+        if "OAuthException" in error_msg or "does not exist" in error_msg:
+            raise Exception(f"API authentication failed. Check your API key and model ID: {error_msg}")
+        elif "model" in error_msg.lower() and "not found" in error_msg.lower():
+            raise Exception(f"Model not found. Verify ROBOFLOW_MODEL_ID '{ROBOFLOW_MODEL_ID}' is correct: {error_msg}")
+        else:
+            raise Exception(f"API detection error: {error_msg}")

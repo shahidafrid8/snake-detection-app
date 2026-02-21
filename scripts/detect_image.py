@@ -41,6 +41,10 @@ def draw_boxes_from_api(img, predictions):
     return img
 
 def main():
+    """
+    Main function to run detection on a user-provided image path.
+    Displays the annotated image with detected snakes.
+    """
     image_path = input("Please enter the path to the image file: ").strip()
 
     if not os.path.exists(image_path):
@@ -48,10 +52,10 @@ def main():
         return
 
     # Run detection with API fallback to local
-    predictions, method = detect(image_path)
+    predictions, method, error_msg = detect(image_path)
 
-    if method == "FAILED":
-        print("Detection failed with both API and local model.")
+    if error_msg:
+        print(f"Detection failed: {error_msg}")
         return
 
     print(f"Detection completed using {method}.")
@@ -65,13 +69,25 @@ def main():
     # Annotate image based on method
     if method == "API":
         annotated_img = draw_boxes_from_api(img, predictions)
+        if 'predictions' in predictions and len(predictions['predictions']) > 0:
+            print(f"Detected {len(predictions['predictions'])} snake(s) in the image.")
+        else:
+            print("No snakes detected in the image.")
     elif method == "LOCAL":
         annotated_img = predictions[0].plot()
+        detection_count = len(predictions[0].boxes)
+        if detection_count > 0:
+            print(f"Detected {detection_count} snake(s) in the image.")
+        else:
+            print("No snakes detected in the image.")
 
-    # Show results
-    output_path = image_path.replace('.png', '_detected.png')
+    # Save results
+    output_path = image_path.replace('.png', '_detected.png').replace('.jpg', '_detected.jpg').replace('.jpeg', '_detected.jpeg')
+    if output_path == image_path:
+        output_path = image_path.rsplit('.', 1)[0] + '_detected.' + image_path.rsplit('.', 1)[-1]
+    
     cv2.imwrite(output_path, annotated_img)
-    print(f"Annotated image saved to {output_path}")
+    print(f"Annotated image saved to: {output_path}")
 
 if __name__ == "__main__":
     main()
