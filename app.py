@@ -35,16 +35,19 @@ if uploaded_file is not None:
     
     if error_msg:
         # Provide user-friendly error messages
-        if "API key" in error_msg or "OAuthException" in error_msg:
-            st.error("Detection failed: Invalid or missing Roboflow API key. Check your API key in Streamlit secrets and ensure it has access to the model.")
-        elif "model" in error_msg.lower() and "not found" in error_msg.lower():
-            st.error("Detection failed: Local model file not found. The model may not be available on this platform.")
-        elif "cv2" in error_msg or "opencv" in error_msg.lower():
-            st.error("Detection failed: OpenCV library issue. Local detection is not supported on this platform.")
-        elif "network" in error_msg.lower() or "connection" in error_msg.lower():
-            st.error("Detection failed: Network issue. Check your internet connection for API calls.")
-        elif "credits" in error_msg.lower():
-            st.error("Detection failed: Roboflow API credits exhausted. Check your Roboflow account.")
+        error_lower = error_msg.lower()
+        if "api key" in error_lower or "oauthexception" in error_lower or "does not exist" in error_msg:
+            st.error("Detection failed: Invalid Roboflow API key. Please check your API key in Streamlit secrets and ensure it's correct.")
+        elif "model" in error_lower and ("not found" in error_lower or "not available" in error_lower):
+            st.error("Detection failed: Roboflow model not deployed or accessible. Check your model status on Roboflow and redeploy if needed.")
+        elif "credits" in error_lower or "quota" in error_lower:
+            st.error("Detection failed: Roboflow API credits exhausted. Check your Roboflow account for usage limits.")
+        elif "network" in error_lower or "connection" in error_lower or "timeout" in error_lower:
+            st.error("Detection failed: Network issue. Check your internet connection. Falling back to local model if available.")
+        elif "cv2" in error_msg or "opencv" in error_lower:
+            st.error("Detection failed: Local model requires OpenCV, which is not available on this platform. Please use API detection.")
+        elif "no such file" in error_lower or "file not found" in error_lower:
+            st.error("Detection failed: Model file not found. Ensure the local model is properly uploaded.")
         else:
             st.error(f"Detection failed: {error_msg}")
         return
