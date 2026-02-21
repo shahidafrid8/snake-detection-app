@@ -51,36 +51,114 @@ with st.sidebar:
     if theme:
         st.markdown("""
         <style>
-        .stApp, .stApp > div, body {
+        :root {
+            --background-color: #0e1117;
+            --text-color: #fafafa;
+            --secondary-bg: #161b22;
+            --border-color: #30363d;
+        }
+        
+        html, body, .stApp {
             background-color: #0e1117 !important;
             color: #fafafa !important;
         }
-        h1, h2, h3, h4, h5, h6, p, span, div, label {
+        
+        .stApp, [data-testid="stDecoration"] {
+            background: #0e1117 !important;
+        }
+        
+        * {
             color: #fafafa !important;
         }
-        .stMarkdown, .stText, .stWrite {
+        
+        /* Text elements */
+        h1, h2, h3, h4, h5, h6, p, span, label, div {
             color: #fafafa !important;
         }
-        [data-testid="stMetricDelta"] {
+        
+        /* Input fields */
+        input, textarea, select {
+            background-color: #161b22 !important;
             color: #fafafa !important;
+            border-color: #30363d !important;
+        }
+        
+        /* Sidebar */
+        [data-testid="stSidebar"] {
+            background-color: #0d1117 !important;
+        }
+        
+        /* Buttons and interactive elements */
+        button {
+            color: #fafafa !important;
+        }
+        
+        /* Info boxes */
+        .stInfo, .stSuccess, .stWarning, .stError {
+            background-color: #161b22 !important;
+            color: #fafafa !important;
+        }
+        
+        /* Divider */
+        hr {
+            border-color: #30363d !important;
         }
         </style>
         """, unsafe_allow_html=True)
     else:
         st.markdown("""
         <style>
-        .stApp, .stApp > div, body {
+        :root {
+            --background-color: #ffffff;
+            --text-color: #262730;
+            --secondary-bg: #f0f2f6;
+            --border-color: #ddd;
+        }
+        
+        html, body, .stApp {
             background-color: #ffffff !important;
             color: #262730 !important;
         }
-        h1, h2, h3, h4, h5, h6, p, span, div, label {
+        
+        .stApp, [data-testid="stDecoration"] {
+            background: #ffffff !important;
+        }
+        
+        * {
             color: #262730 !important;
         }
-        .stMarkdown, .stText, .stWrite {
+        
+        /* Text elements */
+        h1, h2, h3, h4, h5, h6, p, span, label, div {
             color: #262730 !important;
         }
-        [data-testid="stMetricDelta"] {
+        
+        /* Input fields */
+        input, textarea, select {
+            background-color: #f9f9f9 !important;
             color: #262730 !important;
+            border-color: #ddd !important;
+        }
+        
+        /* Sidebar */
+        [data-testid="stSidebar"] {
+            background-color: #f8f9fa !important;
+        }
+        
+        /* Buttons and interactive elements */
+        button {
+            color: #262730 !important;
+        }
+        
+        /* Info boxes */
+        .stInfo, .stSuccess, .stWarning, .stError {
+            background-color: #f9f9f9 !important;
+            color: #262730 !important;
+        }
+        
+        /* Divider */
+        hr {
+            border-color: #ddd !important;
         }
         </style>
         """, unsafe_allow_html=True)
