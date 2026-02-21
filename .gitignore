@@ -9,7 +9,7 @@ ENV/
 .venv/
 .env
 data/
-model/
 *.pt
+!model/best.pt
 .DS_Store
 Thumbs.db

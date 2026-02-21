@@ -31,9 +31,11 @@ if uploaded_file is not None:
     
     # Run detection
     with st.spinner("Detecting snakes..."):
-        predictions, method = detect(temp_path)
+        predictions, method, error_msg = detect(temp_path)
     
-    if predictions:
+    if error_msg:
+        st.error(f"Detection failed: {error_msg}")
+        return
         st.success(f"Detection completed using {method}.")
         
         # Create a copy for drawing

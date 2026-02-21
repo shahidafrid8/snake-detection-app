@@ -18,26 +18,26 @@ def detect(image_path):
         image_path (str): The path to the image file.
 
     Returns:
-        tuple: A tuple containing the predictions and the method used ('API' or 'LOCAL').
+        tuple: A tuple containing the predictions, the method used ('API' or 'LOCAL'), and error message (None if success).
     """
     if not os.path.exists(image_path):
-        raise FileNotFoundError(f"Image not found at {image_path}")
+        return None, "FAILED", f"Image not found at {image_path}"
 
     try:
         print("Attempting detection with Roboflow API...")
         predictions = detect_with_api(image_path)
         print("Inference successful with Roboflow API.")
-        return predictions, "API"
+        return predictions, "API", None
     except Exception as e:
         print(f"Roboflow API failed: {e}")
         print("Falling back to local YOLOv8 model...")
         try:
             predictions = detect_with_local_model(image_path)
             print("Inference successful with local model.")
-            return predictions, "LOCAL"
+            return predictions, "LOCAL", None
         except Exception as e:
             print(f"Local model detection also failed: {e}")
-            return None, "FAILED"
+            return None, "FAILED", str(e)
 
 if __name__ == '__main__':
     # Example usage:
