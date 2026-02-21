@@ -34,7 +34,19 @@ if uploaded_file is not None:
         predictions, method, error_msg = detect(temp_path)
     
     if error_msg:
-        st.error(f"Detection failed: {error_msg}")
+        # Provide user-friendly error messages
+        if "API key" in error_msg or "OAuthException" in error_msg:
+            st.error("Detection failed: Invalid or missing Roboflow API key. Check your API key in Streamlit secrets and ensure it has access to the model.")
+        elif "model" in error_msg.lower() and "not found" in error_msg.lower():
+            st.error("Detection failed: Local model file not found. The model may not be available on this platform.")
+        elif "cv2" in error_msg or "opencv" in error_msg.lower():
+            st.error("Detection failed: OpenCV library issue. Local detection is not supported on this platform.")
+        elif "network" in error_msg.lower() or "connection" in error_msg.lower():
+            st.error("Detection failed: Network issue. Check your internet connection for API calls.")
+        elif "credits" in error_msg.lower():
+            st.error("Detection failed: Roboflow API credits exhausted. Check your Roboflow account.")
+        else:
+            st.error(f"Detection failed: {error_msg}")
         return
         st.success(f"Detection completed using {method}.")
         
