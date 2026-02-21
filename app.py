@@ -51,18 +51,36 @@ with st.sidebar:
     if theme:
         st.markdown("""
         <style>
-        .stApp {
-            background-color: #0e1117;
-            color: #fafafa;
+        .stApp, .stApp > div, body {
+            background-color: #0e1117 !important;
+            color: #fafafa !important;
+        }
+        h1, h2, h3, h4, h5, h6, p, span, div, label {
+            color: #fafafa !important;
+        }
+        .stMarkdown, .stText, .stWrite {
+            color: #fafafa !important;
+        }
+        [data-testid="stMetricDelta"] {
+            color: #fafafa !important;
         }
         </style>
         """, unsafe_allow_html=True)
     else:
         st.markdown("""
         <style>
-        .stApp {
-            background-color: #ffffff;
-            color: #262730;
+        .stApp, .stApp > div, body {
+            background-color: #ffffff !important;
+            color: #262730 !important;
+        }
+        h1, h2, h3, h4, h5, h6, p, span, div, label {
+            color: #262730 !important;
+        }
+        .stMarkdown, .stText, .stWrite {
+            color: #262730 !important;
+        }
+        [data-testid="stMetricDelta"] {
+            color: #262730 !important;
         }
         </style>
         """, unsafe_allow_html=True)
