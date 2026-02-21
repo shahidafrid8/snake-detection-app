@@ -6,6 +6,14 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 from scripts.detect import detect
 
+# Set API key from Streamlit secrets
+if 'ROBOFLOW_API_KEY' in st.secrets:
+    os.environ['ROBOFLOW_API_KEY'] = st.secrets['ROBOFLOW_API_KEY']
+elif 'api_key' in st.secrets:  # Alternative key name
+    os.environ['ROBOFLOW_API_KEY'] = st.secrets['api_key']
+else:
+    st.warning("Roboflow API key not set in secrets. Detection may fail. Set ROBOFLOW_API_KEY in app secrets.")
+
 st.title("Snake Detection App")
 
 st.write("Upload an image to detect snakes using Roboflow API or local YOLO model.")
